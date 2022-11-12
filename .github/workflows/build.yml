@@ -1,0 +1,63 @@
+name: actions
+on:
+  push:
+    branches:
+      - japanese
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: generate html
+        env:
+          RAILS_TEXT_S3_PATH: ${{ secrets.RAILS_TEXT_S3_PATH }}
+        run: |
+          bundle exec jekyll build
+          bundle exec rake -f yasslab/Rakefile refine_html
+      - name: zip html for artifacts
+        run: zip -r html.zip _site
+      - uses: actions/upload-artifact@v2
+        with:
+          name: _site
+          path: html.zip
+          if-no-files-found: error
+  upload:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: _site
+      - name: unzip artifact for upload
+        run: unzip html.zip
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: s3 review app upload
+        if: ${{ github.ref != 'refs/heads/japanese' }}
+        run: aws s3 sync _site ${{ secrets.S3_REVIEW_TEXTBOOK_PATH }}
+      - name: s3 production upload
+        if: ${{ github.ref == 'refs/heads/japanese' }}
+        run: aws s3 sync _site ${{ secrets.S3_TEXTBOOK_PATH }}
+  notify:
+    needs: [build, upload]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 🔔 Notify results
+        uses: yasslab/idobata_notify@main
+        with:
+          idobata_hook_url: ${{ secrets.IDOBATA_GITHUB_ACTIONS }}
+          status: ${{ needs.build.result }}
