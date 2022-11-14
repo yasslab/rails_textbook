@@ -2,7 +2,7 @@ name: actions
 on:
   push:
     branches:
-      - japanese
+      - master
   pull_request:
     branches:
       - "*"
