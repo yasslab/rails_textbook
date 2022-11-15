@@ -12,3 +12,6 @@ _figures/scripts/screenshots/books_app/screenshots/
 _figures/scripts/screenshots/helloworld/helloworld/
 _figures/scripts/screenshots/helloworld/screenshots_org/
 _figures/scripts/screenshots/helloworld/screenshots/
+
+# Generated HTML files
+_review/webroot/

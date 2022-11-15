@@ -27,7 +27,7 @@ language: ja
 booktitle: |-
   Railsの教科書
 subtitle: |-
-  
+
 
 # 著者名。「, 」で区切って複数指定できる
 # 読みを入れる例 aut: [{name: "青木峰郎", file-as: "アオキミネロウ"}, {name: "武藤健志", file-as: "ムトウケンシ"}, {name: "高橋征義", file-as: "タカハシマサヨシ"}, {name: "角征典", file-as: "カドマサノリ"}]
@@ -235,8 +235,8 @@ epubmaker:
   #
   # NCX目次の見出しレベルごとの飾り(配列で設定)。EPUB3ではNCXは作られない
   # ncxindent:
-  #- 
-  #- - 
+  #-
+  #- -
   # フックは、各段階で介入したいときのプログラムを指定する。自動で適切な引数が渡される
   # プログラムには実行権限が必要
   # ファイル変換処理の前に実行するプログラム。スタイルシートのコンパイルをしたいときなどに利用する。
@@ -371,5 +371,5 @@ webmaker:
   htmlext: html        # HTMLファイルの拡張子
   htmlversion: 5       # HTMLのバージョン
   stylesheet:          # 「css」フォルダ内のCSSファイル
-    - normalize.css
-    - webstyle.css
+    - css/normalize.css
+    - css/webstyle.css
