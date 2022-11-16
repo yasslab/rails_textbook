@@ -32,7 +32,6 @@ jobs:
           path: html.zip
           if-no-files-found: error
   upload:
-    if: false
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -50,10 +49,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: s3 review app upload
         if: ${{ github.ref != 'refs/heads/master' }}
-        run: aws s3 sync _site ${{ secrets.S3_REVIEW_TEXTBOOK_PATH }}
+        run: aws s3 sync _review/webroot ${{ secrets.S3_REVIEW_TEXTBOOK_PATH }}
       - name: s3 production upload
         if: ${{ github.ref == 'refs/heads/master' }}
-        run: aws s3 sync _site ${{ secrets.S3_TEXTBOOK_PATH }}
+        run: aws s3 sync _review/webroot ${{ secrets.S3_TEXTBOOK_PATH }}
   notify:
     needs: [build, upload]
     runs-on: ubuntu-latest
