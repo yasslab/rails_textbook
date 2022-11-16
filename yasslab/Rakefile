@@ -17,6 +17,7 @@ using(Module.new do
         file = File.open("_review/webroot/#{file_name}.html")
         html = Nokogiri::HTML(file, nil, 'utf-8')
         file_name.gsub!('-','_')
+        file_name.gsub!(/\d+_/,'') # 01_preface -> preface
         toc_name = html.title
         body << "<li class='chapter'><a href='/textbook/#{file_name}' class='heading hyperref'><span class='number'>第#{sec_number}章</span>#{toc_name}</a></li>"
       end
