@@ -32,7 +32,6 @@ jobs:
           path: html.zip
           if-no-files-found: error
   upload:
-    if: false
     needs: build
     runs-on: ubuntu-latest
     steps:
