@@ -20,23 +20,26 @@ jobs:
         env:
           RAILS_TEXT_S3_PATH: ${{ secrets.RAILS_TEXT_S3_PATH }}
         run: |
-          bundle exec jekyll build
+          cd _review
+          bin/build_html.sh
+          cd ..
           bundle exec rake -f yasslab/Rakefile refine_html
       - name: zip html for artifacts
-        run: zip -r html.zip _site
+        run: zip -r html.zip _review/webroot
       - uses: actions/upload-artifact@v2
         with:
-          name: _site
+          name: _review
           path: html.zip
           if-no-files-found: error
   upload:
+    if: false
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: _site
+          name: _review
       - name: unzip artifact for upload
         run: unzip html.zip
       - name: Configure AWS credentials
