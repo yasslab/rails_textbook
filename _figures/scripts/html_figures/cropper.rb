@@ -9,7 +9,7 @@ class Cropper
         "index_flow_controller.png" => [1320, 1000],
         "index_flow_routes.png" => [1320, 1000],
         "index_flow_view.png" => [1320, 1000],
-        "index_routes.png" => [1300, 1020],
+        "index_routes.png" => [1800, 1020],
       },
       "model" => {
         "create_flow_controller.png" => [1320, 1100],
@@ -25,12 +25,12 @@ class Cropper
         "create_flow_controller.png" => [1320, 1100],
         "create_flow_routes.png" => [1320, 1120],
         "create_overview.png" => [1820, 900],
-        "create_routes.png" => [1320, 1180],
+        "create_routes.png" => [1820, 1180],
         "new_flow.png" => [1320, 980],
         "new_flow_controller.png" => [1320, 980],
         "new_flow_routes.png" => [1320, 980],
         "new_flow_view.png" => [1320, 980],
-        "new_routes.png" => [1320, 960],
+        "new_routes.png" => [1800, 960],
         "new_view_form.png" => [1820, 1140],
         "new_view_form_memo_html.png" => [1820, 740],
         "new_view_form_screenshot.png" => [960, 920],
@@ -42,7 +42,7 @@ class Cropper
         "rails_app_request_to_response.png" => [1320, 980],
         "rails_files.png" => [980, 580],
         "rails_g_controller.png" => [1180, 760],
-        "routes.png" => [1320, 940],
+        "routes.png" => [1820, 940],
         "routes_mapping.png" => [1320, 480],
       },
     }
@@ -62,7 +62,8 @@ class Cropper
   end
 
   private_class_method def self.crop_exec(file_path, width, height)
-    system "convert #{file_path} -crop #{width}x#{height}+0+0 #{file_path}"
+    # imagemagickのconvert機能をつかう
+    system "magick #{file_path} -crop #{width}x#{height}+0+0 #{file_path}"
   end
 end
 
