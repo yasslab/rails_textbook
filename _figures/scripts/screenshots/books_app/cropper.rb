@@ -4,13 +4,13 @@ class Cropper
     dir_name, file_name = file_path.split("/").last(2)
     wh = {
       "screenshots" => {
-        "books_created_data_1.png" => [780, 350],
+        "books_created_data_1.png" => [800, 400],
         "books_edit_data_1.png" => [500, 490],
         "books_index_blank.png" => [340, 310],
-        "books_index_data_1.png" => [1290, 370],
+        "books_index_data_1.png" => [1290, 400],
         "books_index_data_2.png" => [1290, 720],
         "books_new_blank.png" => [420, 500],
-        "books_new_data_1.png" => [420, 500],
+        "books_new_data_1.png" => [420, 580],
         "books_show_data_1.png" => [780, 290],
         "books_with_author_new.png" => [440, 600],
         "books_with_upload_created.png" => [860, 1200],
@@ -33,7 +33,8 @@ class Cropper
   end
 
   private_class_method def self.crop_exec(file_path, width, height)
-    system "convert #{file_path} -crop #{width}x#{height}+0+0 #{file_path}"
+    # imagemagickのconvert機能をつかう
+    system "magick #{file_path} -crop #{width}x#{height}+0+0 #{file_path}"
   end
 end
 
