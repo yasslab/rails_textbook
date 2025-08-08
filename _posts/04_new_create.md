@@ -75,6 +75,8 @@ Bookクラスには色々と便利な機能があるのですが、それは後�
 ビューのコード `views/books/new.html.erb` を見てみましょう。
 
 ```erb
+<% content_for :title, "New book" %>
+
 <h1>New book</h1>
 
 <%= render "form", book: @book %>
@@ -124,7 +126,7 @@ Bookクラスには色々と便利な機能があるのですが、それは後�
 
   <div>
     <%= form.label :memo, style: "display: block" %>
-    <%= form.text_area :memo %>
+    <%= form.textarea :memo %>
   </div>
 
   <div>
@@ -168,7 +170,7 @@ Railsコードの部分をもう少し詳しく見てみましょう。`<%= form
 
 ![メモ部品](assets/new-create/new_view_form_memo_html.png)
 
-メモの部分も同様です。`form.label :memo, style: "display: block"` が "Memo" を表示する部分です。`form.text_area :memo` がその下のテキスト入力欄を作ります。`text_area` は先ほどの `text_field` よりも広くて改行を入力できるテキスト入力欄を作るメソッドです。
+メモの部分も同様です。`form.label :memo, style: "display: block"` が "Memo" を表示する部分です。`form.textarea :memo` がその下のテキスト入力欄を作ります。`textarea` は先ほどの `text_field` よりも広くて改行を入力できるテキスト入力欄を作るメソッドです。
 
 ![投稿ボタン部品](assets/new-create/new_view_form_submit_html.png)
 
@@ -209,7 +211,7 @@ new画面でCreate bookボタンを押すと新たなリクエストを飛ばす
 
 いつものように最初の処理はroutesです。
 
-![routes](assets/new-create/create_routes.png)
+![Routes表](assets/new-create/create_routes.png)
 
 URLのパスは/books 、HTTPメソッドはPOSTなので対応するコントローラとアクションはbooks#create、つまりBooksControllerのcreateアクションが呼び出されます。
 
@@ -229,7 +231,7 @@ def create
   respond_to do |format|
     if @book.save # ⬅2. 本のデータを保存する
       # ⬅3a. 成功したらshow画面へ
-      format.html { redirect_to book_url(@book), notice: "Book was successfully created." }
+      format.html { redirect_to @book, notice: "Book was successfully created." }
       format.json { render :show, status: :created, location: @book }
     else
       # ⬅3b. 保存失敗したらnew画面へ（元の画面）
@@ -256,7 +258,7 @@ def create
 
 ```ruby
 def book_params
-  params.require(:book).permit(:title, :memo)
+  params.expect(book: [ :title, :memo ])
 end
 ```
 
@@ -270,7 +272,7 @@ end
 def book_params
 + p "**********" # 見つけ易くするための目印。何でも良い。
 + p params # paramsの中身を表示
-  params.require(:book).permit(:title, :memo)
+  params.expect(book: [ :title, :memo ])
 end
 ```
 
@@ -300,17 +302,19 @@ Processing by BooksController#create as TURBO_STREAM
 
 ### Strong Parameters
 
-`book_params`の説明に戻ります。`params`の後ろについている、requireとpermitとはなんでしょうか？
+`book_params`の説明に戻ります。`params`の後ろについている、expectとはなんでしょうか？
 
 `app/controllers/books_controller.rb`
 
 ```ruby
 def book_params
-  params.require(:book).permit(:title, :memo)
+  params.expect(book: [ :title, :memo ])
 end
 ```
 
-params以降のrequire, permitメソッドは、パラメータの内容を制限します。意図していないデータが入ってくるのを防ぐための仕組みです。ここでは、bookのtitle, memoだけを受け取るようにしています。requireには対象となるモデル名（モデルについては次章で説明します）を、permitには更新を許可するカラム名を指定します。
+paramsの後ろにつづくexpectメソッドは、意図していないデータが入ってくるのを防ぐためにパラメータの内容を制限します。ここでは、bookのtitle, memoだけを受け取るようにしています。expectへ渡すキーワード引数のキーワードには対象となるモデル名を（モデルについては次章で説明します）、値には更新を許可するカラム名を配列で指定します。ここで書かれている `expect(book: [ :title, :memo ])` では、bookモデルのtitleカラムおよびmemoカラムを許可します。
+
+expectメソッドはRails8.0で導入されました。Rails7.2まではrequireメソッドとpermitメソッドをつかって `params.require(:book).permit(:title, :memo)` と書きます。
 
 このパラメータを制限する仕組みはStrong Parametersと呼ばれます。これが必要な理由は、攻撃に対する防御、つまりセキュリティ対策です。ブラウザから飛ばすパラメータは、ユーザーの手によって改ざんすることも可能です。つまり、任意のパラメータを飛ばして攻撃をすることもできます。そのため、1つ前のnew画面で用意したformに存在しないパラメータが飛んでくる可能性もあるので、ここで変更を許可するパラメータを絞っています。
 
@@ -328,7 +332,7 @@ def create
   respond_to do |format|
     if @book.save # ⬅2. 本のデータを保存する
       # ⬅3a. 成功したらshow画面へ
-      format.html { redirect_to book_url(@book), notice: "Book was successfully created." }
+      format.html { redirect_to @book, notice: "Book was successfully created." }
       format.json { render :show, status: :created, location: @book }
     else
       # ⬅3b. 保存失敗したらnew画面へ（元の画面）
@@ -339,7 +343,7 @@ def create
 end
 
 def book_params
-  params.require(:book).permit(:title, :memo)
+  params.expect(book: [ :title, :memo ])
 end
 ```
 
@@ -355,7 +359,7 @@ Book.new（book_params）で本のデータを作ります。newはクラスの�
 - newアクションではまだデータを保存せず、サーバのデータ変更を伴わないためHTTPメソッドGETを使う
 - createアクションではデータを保存し、サーバのデータ変更を伴うためHTTPメソッドPOSTを使う
 - ユーザーがブラウザでformへ入力した内容はリクエスト内のパラメータとしてRailsアプリへ届き、 paramsで渡ってきたパラメータを取得できる
-- セキュリティ問題対策のためStrongParameters（requireメソッド、permitメソッド）を利用してparamsに制限をかける
+- セキュリティ問題対策のためStrongParameters（expectメソッド）を利用してparamsに制限をかける
 
 次の章ではモデルについて説明します。
 
