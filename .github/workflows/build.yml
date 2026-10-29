@@ -8,7 +8,8 @@ on:
       - "*"
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # ubuntu-latest（26.04）には Ruby 2.7 が無いので、.ruby-version の 2.7.4 が入る版に固定する
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
