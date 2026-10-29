@@ -8,7 +8,8 @@ on:
       - "*"
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # ubuntu-latest（26.04）には Ruby 2.7 が無いので、.ruby-version の 2.7.4 が入る版に固定する
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4.4.0
         with:
@@ -34,6 +35,10 @@ jobs:
   upload:
     needs: build
     runs-on: ubuntu-latest
+    # AWS へは長く使える鍵ではなく OIDC で入る（id-token）。GITHUB_TOKEN は checkout にしか使わない
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v2.8.0
       - uses: actions/download-artifact@v4.3.0
@@ -41,12 +46,26 @@ jobs:
           name: _review
       - name: unzip artifact for upload
         run: unzip html.zip
+      # 既定ブランチへの push は本番用、PR は review_app 用のロールを引き受ける（ARN はリポジトリの変数）。
+      # 書ける範囲を決めるのは AWS 側の信頼ポリシー（sub）で、この選び方は経路を分けるだけ
+      - name: Choose AWS role
+        id: role
+        env:
+          REVIEW:     ${{ vars.AWS_ROLE_ARN_LEARNENOUGH_REVIEW }}
+          PRODUCTION: ${{ vars.AWS_ROLE_ARN_LEARNENOUGH_PRODUCTION }}
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/master" ]; then name=AWS_ROLE_ARN_LEARNENOUGH_PRODUCTION; arn=$PRODUCTION
+          else name=AWS_ROLE_ARN_LEARNENOUGH_REVIEW; arn=$REVIEW; fi
+          [ -n "$arn" ] || { echo "::error::変数 $name が未設定です"; exit 1; }
+          echo "arn=$arn" >> "$GITHUB_OUTPUT"
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4.3.1
+        uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-1
+          role-to-assume: ${{ steps.role.outputs.arn }}
+      # 鍵ではなくロールで入ったことを、ログで確かめられるようにする（assumed-role/... と出る）
+      - name: Show AWS identity
+        run: aws sts get-caller-identity
       - name: s3 review app upload
         if: ${{ github.ref != 'refs/heads/master' }}
         run: aws s3 sync _review/webroot ${{ secrets.S3_REVIEW_TEXTBOOK_PATH }}
